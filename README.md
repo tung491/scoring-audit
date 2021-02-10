@@ -38,11 +38,13 @@ Analyzing 3542 issues
 +---------+----------------------------------------+--------------------------------+
 |  NAME   |                  URL                   |            PROBLEMS            |
 +---------+----------------------------------------+--------------------------------+
+| CS-502  | https://jira.vccloud.vn/browse/CS-502  | Missing Rate                   |
+| GATE-17 | https://jira.vccloud.vn/browse/GATE-17 | Done but doesn't back to do-er |
+| BK-310  | https://jira.vccloud.vn/browse/BK-310  | Done but doesn't back to do-er |
 | BKE-247 | https://jira.vccloud.vn/browse/BKE-247 | Missing Due Date               |
+| CS-271  | https://jira.vccloud.vn/browse/CS-271  | Missing Category               |
 | CS-219  | https://jira.vccloud.vn/browse/CS-219  | Missing Due Date, Missing      |
 |         |                                        | Category, Missing start date   |
-| CS-502  | https://jira.vccloud.vn/browse/CS-502  | Missing Rate                   |
-| CS-271  | https://jira.vccloud.vn/browse/CS-271  | Missing Category               |
 +---------+----------------------------------------+--------------------------------+
 ```
 
