@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	cfgFile string
+	cfgFile  string
 	userName string
-	token string
+	token    string
 )
 
 var rootCmd = &cobra.Command{

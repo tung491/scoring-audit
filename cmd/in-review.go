@@ -16,7 +16,7 @@ var listInReviewTask = &cobra.Command{
 		var data [][]string
 		channel := make(chan []string)
 		for _, issue := range issues {
-			go getInReviewdTask(issue, me, channel)
+			go getInReviewedTask(issue, me, channel)
 		}
 
 		for count := 0; count < len(issues); count++ {
@@ -31,9 +31,9 @@ var listInReviewTask = &cobra.Command{
 	},
 }
 
-func getInReviewdTask(issue Issue, me User, channel chan []string) {
+func getInReviewedTask(issue Issue, me User, channel chan []string) {
 	fields := issue.Fields
-	if isReviewedTask(me, issue) && issue.Fields.Assignee.Name != userName && issue.Fields.Status.Name == "In Review" {
+	if isReviewedTask(me, issue) && issue.Fields.Status.Name == "In Review" {
 		url := "https://jira.vccloud.vn/browse/" + issue.Key
 		channel <- []string{issue.Key, url, fields.Assignee.Name, fields.Status.Name}
 	}

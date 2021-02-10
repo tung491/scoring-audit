@@ -66,9 +66,9 @@ type Item struct {
 	Field      string `json:"field"`
 	FieldType  string `json:"fieldtype"`
 	From       string `json:"from"`
-	FromString string `json:"from_string"`
+	FromString string `json:"fromString"`
 	To         string `json:"to"`
-	ToString   string `json:"to_string"`
+	ToString   string `json:"toString"`
 }
 
 type User struct {
@@ -80,8 +80,7 @@ type User struct {
 func getUserInfo() User {
 	url := "https://jira.vccloud.vn/rest/api/2/user?username=" + userName
 
-	client := &http.Client{
-	}
+	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -165,7 +164,7 @@ func getIssues(projects []string, startAt int) IssuesResponse {
 	query.Add("startAt", strconv.Itoa(startAt))
 	jqlQuery := fmt.Sprintf("project in (\"%s\")", strings.Join(projects, "\",\""))
 	query.Add("jql", jqlQuery)
-	query.Add("expand", "changeLog")
+	query.Add("expand", "changelog")
 	req.URL.RawQuery = query.Encode()
 	if err != nil {
 		log.Fatal(err)
