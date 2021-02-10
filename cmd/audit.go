@@ -219,16 +219,16 @@ func auditTask(me User, issue Issue) []string {
 				problems = append(problems, "Missing Rate")
 			}
 			if fields.FinishDate == "" {
-				problems = append(problems, "Missing finish date")
+				problems = append(problems, "Missing Finish date")
 			}
 			if fields.StartDate == "" {
-				problems = append(problems, "Missing start date")
+				problems = append(problems, "Missing Start date")
 			}
 			if fields.Level == (Field{}) {
 				problems = append(problems, "Missing Level")
 			}
 		} else if isReviewedTask(me, issue) {
-			problems = append(problems, "Done but doesn't back to do-er")
+			problems = append(problems, "Done but doesn't re-assign to do-er")
 		}
 
 		url := "https://jira.vccloud.vn/browse/" + issue.Key
