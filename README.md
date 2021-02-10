@@ -1,6 +1,6 @@
 # Scoring Audit
 
-Using for auding your score in https://scoring.vccloud.vn/home
+Using for auding your score
 
 ## Install
 
