@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var (
@@ -45,6 +46,7 @@ type Field struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Key string `json:"key,omitempty"`
 }
 
 type ChangeLog struct {
@@ -139,20 +141,21 @@ func listIssues() []Issue {
 	projects := getSoftwareProjects()
 	resp := getIssues(projects, 0)
 	issues := resp.Issues
-	channel := make(chan IssuesResponse)
+	wg := new(sync.WaitGroup)
 	pageCount := int(math.Ceil(float64(resp.Total/resp.MaxResults))) + 1
+	wg.Add(pageCount - 1)
 	for page := 2; page <= pageCount; page++ {
-		go getIssuesChannel(projects, defaultMaxResults*(page-1), channel)
+		go appendIssues(wg, &issues, projects, defaultMaxResults*(page-1))
 	}
+	wg.Wait()
 
-	for count := 0; count < pageCount-1; count++ {
-		select {
-		case resp := <-channel:
-			issues = append(issues, resp.Issues...)
-		}
-	}
 	fmt.Printf("Analyzing %d issues\n", len(issues))
 	return issues
+}
+
+func appendIssues(wg *sync.WaitGroup, issues *[]Issue, projects []string ,startAt int) {
+	defer wg.Done()
+	*issues = append(*issues, getIssues(projects, startAt).Issues...)
 }
 
 func getIssues(projects []string, startAt int) IssuesResponse {
@@ -187,16 +190,12 @@ func getIssues(projects []string, startAt int) IssuesResponse {
 	return issues
 }
 
-func getIssuesChannel(projects []string, startAt int, channel chan IssuesResponse) {
-	channel <- getIssues(projects, startAt)
-}
-
 func isReviewedTask(me User, issue Issue) bool {
 	for _, history := range issue.ChangeLog.Histories {
 		items := history.Items
 		if len(items) == 2 {
 			item1, item2 := items[0], items[1]
-			if item1.Field == "assignee" && item1.From == me.Key &&
+			if item1.Field == "assignee" && item1.From == me.Key && item1.To == issue.Fields.Assignee.Key &&
 				item2.FromString == "In Progress" && item2.ToString == "In Review" {
 				return true
 			}
@@ -208,7 +207,7 @@ func isReviewedTask(me User, issue Issue) bool {
 func auditTask(me User, issue Issue) []string {
 	var problems []string
 	fields := issue.Fields
-	if fields.Resolution.Name == "Done" && fields.IssueType.Name == "Task" {
+	if fields.Status.Name == "Done" && fields.IssueType.Name == "Task" {
 		if fields.Assignee.Name == userName {
 			if fields.DueDate == "" {
 				problems = append(problems, "Missing Due Date")
@@ -241,8 +240,12 @@ func auditTask(me User, issue Issue) []string {
 
 }
 
-func auditTaskChannel(me User, issue Issue, channel chan []string) {
-	channel <- auditTask(me, issue)
+func auditTaskAppend(wg *sync.WaitGroup, me User, issue Issue, data *[][]string) {
+	defer wg.Done()
+	s := auditTask(me, issue)
+	if len(s) > 0 {
+		*data = append(*data, s)
+	}
 }
 
 var auditCmd = &cobra.Command{
@@ -252,20 +255,12 @@ var auditCmd = &cobra.Command{
 		issues := listIssues()
 		me := getUserInfo()
 		var data [][]string
-		channel := make(chan []string)
+		wg := new(sync.WaitGroup)
+		wg.Add(len(issues))
 		for _, issue := range issues {
-			go auditTaskChannel(me, issue, channel)
+			go auditTaskAppend(wg, me, issue, &data)
 		}
-		count := 0
-		for count < len(issues) {
-			select {
-			case s := <-channel:
-				if len(s) > 0 {
-					data = append(data, s)
-				}
-				count++
-			}
-		}
+		wg.Wait()
 		formatter.Output(auditHeader, data)
 	},
 }

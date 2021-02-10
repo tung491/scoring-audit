@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/tung491/đ-audit/formatter"
+	"sync"
 )
 
 var listIssueHeader = []string{"Issue", "URL", "Assignee", "Status"}
@@ -14,31 +15,25 @@ var listInReviewTask = &cobra.Command{
 		issues := listIssues()
 		me := getUserInfo()
 		var data [][]string
-		channel := make(chan []string)
+		wg := new(sync.WaitGroup)
+		wg.Add(len(issues))
 		for _, issue := range issues {
-			go getInReviewedTask(issue, me, channel)
+			go getInReviewedTask(wg, &data, issue, me)
 		}
-
-		for count := 0; count < len(issues); count++ {
-			select {
-			case s := <-channel:
-				if len(s) > 0 {
-					data = append(data, s)
-				}
-			}
-		}
+		wg.Wait()
 		formatter.Output(listIssueHeader, data)
 	},
 }
 
-func getInReviewedTask(issue Issue, me User, channel chan []string) {
+func getInReviewedTask(wg *sync.WaitGroup, data *[][]string, issue Issue, me User) {
+	defer wg.Done()
 	fields := issue.Fields
 	if isReviewedTask(me, issue) && issue.Fields.Status.Name == "In Review" {
 		url := "https://jira.vccloud.vn/browse/" + issue.Key
-		channel <- []string{issue.Key, url, fields.Assignee.Name, fields.Status.Name}
+		*data = append(*data, []string{issue.Key, url, fields.Assignee.Name, fields.Status.Name})
 	}
-	channel <- []string{}
 }
+
 
 func init() {
 	rootCmd.AddCommand(listInReviewTask)
