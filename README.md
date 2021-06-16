@@ -33,7 +33,7 @@ token: abcxyz
 2. Example:
 
 ```shell
-➜  d-audit git:(main) ✗ daudit audit
+➜  d-audit git:(main) ✗ ./daudit audit --username <username>
 Analyzing 3542 issues
 +---------+----------------------------------------+--------------------------------+
 |  NAME   |                  URL                   |            PROBLEMS            |
@@ -55,7 +55,7 @@ Analyzing 3542 issues
 2. Example:
 
 ```shell
-➜  d-audit git:(main) ✗ daudit in-review
+➜  d-audit git:(main) ✗ ./daudit in-review --username <username> 
 Analyzing 3542 issues
 +--------+---------------------------------------+----------+-----------+
 | ISSUE  |                  URL                  | ASSIGNEE |  STATUS   |
