@@ -15,6 +15,7 @@ import (
 
 var (
 	auditHeader = []string{"Name", "URL", "Problems"}
+	searchUserName string
 )
 
 const (
@@ -80,7 +81,7 @@ type User struct {
 }
 
 func getUserInfo() User {
-	url := "https://jira.vccloud.vn/rest/api/2/user?username=" + userName
+	url := "https://jira.vccloud.vn/rest/api/2/user?username=" + searchUserName
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -208,7 +209,7 @@ func auditTask(me User, issue Issue) []string {
 	var problems []string
 	fields := issue.Fields
 	if fields.Status.Name == "Done" && fields.IssueType.Name == "Task" {
-		if fields.Assignee.Name == userName {
+		if fields.Assignee.Name == searchUserName {
 			if fields.DueDate == "" {
 				problems = append(problems, "Missing Due Date")
 			}
@@ -229,7 +230,7 @@ func auditTask(me User, issue Issue) []string {
 			}
 		} else if isReviewedTask(me, issue) {
 			problems = append(problems, "Done but doesn't re-assign to do-er")
-		}
+			}
 
 		url := "https://jira.vccloud.vn/browse/" + issue.Key
 		if len(problems) > 0 {
@@ -266,5 +267,6 @@ var auditCmd = &cobra.Command{
 }
 
 func init() {
+	auditCmd.PersistentFlags().StringVar(&searchUserName, "username", "", "Username")
 	rootCmd.AddCommand(auditCmd)
 }

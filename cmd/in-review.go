@@ -36,5 +36,6 @@ func getInReviewedTask(wg *sync.WaitGroup, data *[][]string, issue Issue, me Use
 
 
 func init() {
+	listInReviewTask.PersistentFlags().StringVar(&searchUserName, "username", "", "Your JIRA username")
 	rootCmd.AddCommand(listInReviewTask)
 }
